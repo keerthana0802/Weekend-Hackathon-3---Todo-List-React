@@ -1,15 +1,86 @@
+import { useState } from "react";
 import React from "react";
-import "./../styles/App.css";
 
-function App() 
-{
-	return (
-	<div id="main">
-	//Do not alter main div
-	//Please do not alter the functional component as tests depend on the type of component.
-	</div>
-	);
+export default function App() {
+  const [inputBox, setInputBox] = useState("");
+  const [editBoxText, setEditBoxText] = useState("");
+  const [toDoList, setToDoList] = useState([]);
+  const [taskId, setTaskId] = useState(0);
+  const [showEditBox, setShowEditBox] = useState(false);
+  const [editId, setEditId] = useState(1);
+
+  const handleInputBoxChange = (event) => {
+    let text = event.target.value;
+    setInputBox(text);
+  };
+
+  const handleAddTask = () => {
+    let tempList = [...toDoList];
+    tempList.push({ id: taskId, text: inputBox });
+    setTaskId(taskId + 1);
+    setToDoList(tempList);
+    setInputBox("");
+  };
+
+  const handleDelete = (id) => {
+    let newToDoList = toDoList.filter((task) => task !== toDoList[id]);
+    setToDoList(newToDoList);
+  };
+
+  const handleEdit = (id) => {
+    setShowEditBox(!showEditBox);
+    setEditId(id);
+  };
+
+  const handleEditBox = (event) => {
+    let text = event.target.value;
+    setEditBoxText(text);
+  };
+
+  const saveEdit = () => {
+    const tempList = [...toDoList];
+    tempList.forEach((task) => {
+      if (task.id === editId) {
+        task.text = editBoxText;
+      }
+    });
+    setToDoList(tempList);
+    setShowEditBox(false);
+    setEditBoxText("");
+  };
+
+  return (
+    <>
+      <div id="main">
+        <textarea id="task" value={inputBox} onChange={handleInputBoxChange} />
+        <button id="btn" disabled={!inputBox} onClick={handleAddTask}>
+          Add Task
+        </button>
+        <hr />
+        {toDoList.length === 0 ? (
+          <div>No Tasks</div>
+        ) : (
+          <ul>
+            {toDoList.map((task, id) => {
+              return (
+                <li key={id} className="list">
+                  {task.text}
+                  <button onClick={() => handleEdit(id)}>Edit</button>
+                  <button onClick={() => handleDelete(id)}>Delete</button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {showEditBox ? (
+          <div>
+            <textarea value={editBoxText} onChange={handleEditBox} />
+            <button disabled={!editBoxText} onClick={() => saveEdit()}>
+              Save
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </>
+  );
 }
-
-
-export default App;
