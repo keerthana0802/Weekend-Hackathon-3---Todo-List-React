@@ -1,86 +1,55 @@
-import { useState } from "react";
-import React from "react";
+import React, {useState, useRef} from "react";
+import Task from "./task";
+import "./../styles/App.css";
 
-export default function App() {
-  const [inputBox, setInputBox] = useState("");
-  const [editBoxText, setEditBoxText] = useState("");
-  const [toDoList, setToDoList] = useState([]);
-  const [taskId, setTaskId] = useState(0);
-  const [showEditBox, setShowEditBox] = useState(false);
-  const [editId, setEditId] = useState(1);
+function App() {
+  const [tasks, setTasks] = useState([]);
+  const [inputValue, setInputValue] = useState("");
 
-  const handleInputBoxChange = (event) => {
-    let text = event.target.value;
-    setInputBox(text);
+  const taskId = useRef(0);
+
+  const handleChange = (event) => {
+    setInputValue(event.target.value);
   };
 
-  const handleAddTask = () => {
-    let tempList = [...toDoList];
-    tempList.push({ id: taskId, text: inputBox });
-    setTaskId(taskId + 1);
-    setToDoList(tempList);
-    setInputBox("");
+  const handleClick = () => {
+    const updatedTasks = [...tasks];
+    updatedTasks.push({id: taskId.current, text: inputValue});
+    taskId.current = taskId.current + 1;
+    setInputValue("");
+    setTasks(updatedTasks);
   };
 
   const handleDelete = (id) => {
-    let newToDoList = toDoList.filter((task) => task !== toDoList[id]);
-    setToDoList(newToDoList);
+    const taskCopy = [...tasks];
+    const filteredTasks = taskCopy.filter((task) => (task.id !== id ? task : null));
+    setTasks(filteredTasks);
   };
 
-  const handleEdit = (id) => {
-    setShowEditBox(!showEditBox);
-    setEditId(id);
-  };
-
-  const handleEditBox = (event) => {
-    let text = event.target.value;
-    setEditBoxText(text);
-  };
-
-  const saveEdit = () => {
-    const tempList = [...toDoList];
-    tempList.forEach((task) => {
-      if (task.id === editId) {
-        task.text = editBoxText;
+  const saveChangedText = (id, newtext) => {
+    const taskCopy = [...tasks];
+    taskCopy.forEach((task) => {
+      if (task.id === id) {
+        task.text = newtext;
       }
     });
-    setToDoList(tempList);
-    setShowEditBox(false);
-    setEditBoxText("");
+    setTasks(taskCopy);
   };
 
   return (
-    <>
-      <div id="main">
-        <textarea id="task" value={inputBox} onChange={handleInputBoxChange} />
-        <button id="btn" disabled={!inputBox} onClick={handleAddTask}>
-          Add Task
-        </button>
-        <hr />
-        {toDoList.length === 0 ? (
-          <div>No Tasks</div>
-        ) : (
-          <ul>
-            {toDoList.map((task, id) => {
-              return (
-                <li key={id} className="list">
-                  {task.text}
-                  <button onClick={() => handleEdit(id)}>Edit</button>
-                  <button onClick={() => handleDelete(id)}>Delete</button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        {showEditBox ? (
-          <div>
-            <textarea value={editBoxText} onChange={handleEditBox} />
-            <button disabled={!editBoxText} onClick={() => saveEdit()}>
-              Save
-            </button>
-          </div>
-        ) : null}
-      </div>
-    </>
+    <div id="main">
+      <ul>
+        {tasks.map((task) => (
+          <Task key={task.id} task={task} saveChangedText={saveChangedText} handleDelete={handleDelete} />
+        ))}
+      </ul>
+
+      <input id="task" type="textarea" value={inputValue} onChange={handleChange}></input>
+      <button id="btn" onClick={handleClick} disabled={!inputValue}>
+        Add Task
+      </button>
+    </div>
   );
 }
+
+export default App;
